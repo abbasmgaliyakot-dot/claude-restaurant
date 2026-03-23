@@ -1,37 +1,49 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from database import db, pwd_context
-from auth_utils import create_token, hash_password
+# auth_utils.py
+import hashlib
+from passlib.context import CryptContext
+import jwt
+import os
+from datetime import datetime, timedelta
 
-router = APIRouter()
+# -----------------------
+# Password hashing setup
+# -----------------------
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-class LoginRequest(BaseModel):
-    username: str
-    password: str
+def hash_password(password: str) -> str:
+    """
+    Hashes any length password safely for bcrypt.
+    """
+    # Pre-hash with SHA-256 to reduce password to fixed length
+    sha256_pw = hashlib.sha256(password.encode()).digest()
+    return pwd_context.hash(sha256_pw)
 
-class RegisterRequest(BaseModel):
-    username: str
-    password: str
-    name: str
-    role: str = "staff"
+								 
+				 
+def verify_password(password: str, hashed: str) -> bool:
+    """
+    Verifies password against hash, supports any length password.
+    """
+    sha256_pw = hashlib.sha256(password.encode()).digest()
+    return pwd_context.verify(sha256_pw, hashed)
 
-@router.post("/login")
-async def login(req: LoginRequest):
-    user = await db.db.users.find_one({"username": req.username})
-    if not user or not pwd_context.verify(req.password, user["password"]):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    token = create_token({"sub": str(user["_id"]), "username": user["username"], "role": user["role"], "name": user.get("name","")})
-    return {"token": token, "role": user["role"], "name": user.get("name",""), "username": user["username"]}
+# -----------------------
+# JWT token creation
+# -----------------------
+JWT_SECRET = os.getenv("JWT_SECRET", "your-secret-key")  # replace with env var in prod
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRE_MINUTES = 60  # 1 hour
+																											
 
-@router.post("/register")
-async def register(req: RegisterRequest):
-    existing = await db.db.users.find_one({"username": req.username})
-    if existing:
-        raise HTTPException(status_code=400, detail="Username already exists")
-    await db.db.users.insert_one({
-        "username": req.username,
-        "password": hash_password(req.password),
-        "name": req.name,
-        "role": req.role
-    })
-    return {"message": "User created"}
+def create_token(data: dict, expires_delta: int = JWT_EXPIRE_MINUTES) -> str:
+    """
+    Create JWT token with optional expiration.
+    """
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(minutes=expires_delta)
+    to_encode.update({"exp": expire})
+    token = jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+						 
+						
+	  
+    return token
