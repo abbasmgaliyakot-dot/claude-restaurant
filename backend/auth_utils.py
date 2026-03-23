@@ -14,8 +14,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 def hash_password(password: str) -> str:
-    sha256_pw = hashlib.sha256(password.encode()).digest()
-    return pwd_context.hash(sha256_pw)
+   return pwd_context.hash(password)
 
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
