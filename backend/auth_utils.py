@@ -13,7 +13,10 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    # Truncate to 72 bytes (bcrypt limit) while preserving valid unicode
+    password_bytes = password.encode("utf-8")[:72]
+    truncated = password_bytes.decode("utf-8", errors="ignore")
+    return pwd_context.hash(truncated)
 
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
