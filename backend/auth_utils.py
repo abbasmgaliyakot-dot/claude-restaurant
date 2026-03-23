@@ -3,6 +3,7 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from fastapi import HTTPException, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import hashlib
 import os
 
 SECRET_KEY = os.getenv("SECRET_KEY", "super-secret-restaurant-key-2024")
@@ -13,7 +14,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    sha256_pw = hashlib.sha256(password.encode()).digest()
+    return pwd_context.hash(sha256_pw)
 
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
