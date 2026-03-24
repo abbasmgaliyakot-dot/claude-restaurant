@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from database import db
-from routers import auth, tables, menu, orders, admin, history
+from . import auth, tables, menu, orders, admin, history
 from websocket_manager import manager
 
 @asynccontextmanager
