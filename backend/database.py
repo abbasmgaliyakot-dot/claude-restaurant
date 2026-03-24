@@ -3,8 +3,8 @@ from pymongo import ASCENDING
 import os
 from datetime import datetime
 
-MONGO_URL = os.getenv("MONGO_URL", "mongodb+srv://abbasmgaliyakot_db_user:vxjDMx1uUHYJz21b@cluster0.dx3cboz.mongodb.net/ClaudeRes?retryWrites=true&w=majority&tls=true")
-DB_NAME = os.getenv("DB_NAME", "ClaudeRes")
+MONGO_URL = os.getenv("MONGO_URL", "mongodb+srv://abbasmgaliyakot_db_user:vxjDMx1uUHYJz21b@cluster0.dx3cboz.mongodb.net/ClaudeRest?retryWrites=true&w=majority&tls=true")
+DB_NAME = os.getenv("DB_NAME", "ClaudeRest")
 
 
 class Database:
